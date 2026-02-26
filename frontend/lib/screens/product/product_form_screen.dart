@@ -28,8 +28,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   File? _selectedImage;
 
   @override
+  void initState() {
+    super.initState();
+    // Fetch categories when form loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoryProvider>().fetchCategories();
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Product && !_isEdit) {
       _editingProduct = args;

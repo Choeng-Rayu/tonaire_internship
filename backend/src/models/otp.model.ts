@@ -47,4 +47,29 @@ export class OtpModel {
       .input('id', sql.Int, id)
       .query('UPDATE OtpCodes SET used = 1 WHERE id = @id');
   }
+
+  static async invalidateAllForUser(userId: number): Promise<void> {
+    const pool = await getPool();
+    await pool
+      .request()
+      .input('user_id', sql.Int, userId)
+      .query('UPDATE OtpCodes SET used = 1 WHERE user_id = @user_id AND used = 0');
+  }
+
+  static async findValidOtp(userId: number, otp: string): Promise<OtpCode | null> {
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input('user_id', sql.Int, userId)
+      .input('otp', sql.VarChar(6), otp)
+      .query(`
+        SELECT * FROM OtpCodes
+        WHERE user_id = @user_id
+          AND otp = @otp
+          AND used = 0
+          AND expires_at > GETDATE()
+        ORDER BY created_at DESC
+      `);
+    return result.recordset[0] || null;
+  }
 }

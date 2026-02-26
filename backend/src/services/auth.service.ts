@@ -15,9 +15,9 @@ export class AuthService {
   }
 
   static generateToken(payload: JwtPayload): string {
-    return jwt.sign(payload, env.jwt.secret, {
-      expiresIn: env.jwt.expiresIn as string,
-    });
+    return jwt.sign(payload, env.jwt.secret as string, {
+      expiresIn: env.jwt.expiresIn,
+    } as jwt.SignOptions);
   }
 
   static toUserResponse(user: User): UserResponse {

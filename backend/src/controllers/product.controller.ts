@@ -13,16 +13,30 @@ export class ProductController {
   static async create(req: Request, res: Response): Promise<void> {
     try {
       const { name, description, category_id, price } = req.body;
+      console.log('=== CREATE PRODUCT REQUEST ===');
+      console.log('Body:', { name, description, category_id, price });
+      console.log('File:', req.file?.filename || 'No file');
+      console.log('================================');
+
+      // Validate required fields
+      if (!name || !category_id || !price) {
+        console.error('Missing required fields:', { name, category_id, price });
+        sendError(res, 'Missing required fields: name, category_id, price', 400);
+        return;
+      }
 
       // Validate category exists
       const category = await CategoryModel.findById(parseInt(category_id, 10));
       if (!category) {
+        console.error(`Category not found: ${category_id}`);
         sendError(res, 'Category not found.', 404);
         return;
       }
+      console.log(`Category found: ${category.name}`);
 
       // Handle image upload
       const imageUrl = req.file ? req.file.filename : null;
+      console.log(`Image URL: ${imageUrl}`);
 
       const product = await ProductModel.create(
         name,
@@ -32,9 +46,10 @@ export class ProductController {
         imageUrl
       );
 
+      console.log('✅ Product created successfully:', product);
       sendSuccess(res, 'Product created successfully.', product, 201);
     } catch (error) {
-      console.error('Create product error:', error);
+      console.error('❌ Create product error:', error);
       sendError(res, 'Failed to create product.', 500);
     }
   }

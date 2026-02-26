@@ -98,6 +98,8 @@ export class ProductModel {
     imageUrl: string | null
   ): Promise<Product> {
     const pool = await getPool();
+    console.log('ProductModel.create called with:', { name, categoryId, price, imageUrl });
+    
     const result = await pool
       .request()
       .input('name', sql.NVarChar(255), name)
@@ -110,6 +112,8 @@ export class ProductModel {
         OUTPUT INSERTED.*
         VALUES (@name, @description, @category_id, @price, @image_url)
       `);
+    
+    console.log('Product inserted, returned:', result.recordset[0]);
     return result.recordset[0];
   }
 
