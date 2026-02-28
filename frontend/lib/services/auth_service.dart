@@ -21,6 +21,18 @@ class AuthService {
     });
   }
 
+  Future<Map<String, dynamic>> googleLogin({
+    required String googleId,
+    required String email,
+    required String name,
+  }) async {
+    return _api.post('/auth/google', body: {
+      'google_id': googleId,
+      'email': email,
+      'name': name,
+    });
+  }
+
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     return _api.post('/auth/forgot-password', body: {
       'email': email,

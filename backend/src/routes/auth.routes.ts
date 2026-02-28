@@ -58,6 +58,32 @@ router.post(
 );
 
 /**
+ * POST /api/auth/google
+ * Google Sign-In from mobile/web app (token-based)
+ */
+router.post(
+  '/google',
+  [
+    body('google_id')
+      .trim()
+      .notEmpty()
+      .withMessage('Google ID is required.'),
+    body('email')
+      .trim()
+      .notEmpty()
+      .withMessage('Email is required.')
+      .isEmail()
+      .withMessage('Please provide a valid email address.'),
+    body('name')
+      .trim()
+      .notEmpty()
+      .withMessage('Name is required.'),
+  ],
+  validate,
+  AuthController.googleLogin
+);
+
+/**
  * POST /api/auth/forgot-password
  */
 router.post(

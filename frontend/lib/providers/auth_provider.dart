@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
@@ -9,6 +10,9 @@ import '../utils/constants.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService;
   late final AuthService _authService;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   bool _isLoading = false;
   bool _isAuthenticated = false;
@@ -148,12 +152,66 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Google Sign-In
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      // Trigger the Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        _errorMessage = 'Google sign-in was cancelled.';
+        _setLoading(false);
+        return false;
+      }
+
+      // Send Google user info to our backend
+      final response = await _authService.googleLogin(
+        googleId: googleUser.id,
+        email: googleUser.email,
+        name: googleUser.displayName ?? googleUser.email.split('@')[0],
+      );
+
+      if (response['success'] == true) {
+        final data = response['data'];
+        _token = data['token'] as String;
+        _user = User.fromJson(data['user'] as Map<String, dynamic>);
+        _isAuthenticated = true;
+
+        // Save token and user
+        _apiService.setToken(_token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(Constants.tokenKey, _token!);
+        await prefs.setString(Constants.userKey, jsonEncode(_user!.toJson()));
+
+        _setLoading(false);
+        return true;
+      } else {
+        _errorMessage = response['message'] as String? ?? 'Google login failed.';
+        _setLoading(false);
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = 'Google sign-in error: ${e.toString()}';
+      _setLoading(false);
+      return false;
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     _token = null;
     _user = null;
     _isAuthenticated = false;
     _apiService.setToken(null);
+
+    // Sign out from Google too
+    try {
+      await _googleSignIn.signOut();
+    } catch (_) {}
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.tokenKey);

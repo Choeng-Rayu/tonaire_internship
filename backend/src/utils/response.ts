@@ -7,7 +7,7 @@ export function sendSuccess<T>(res: Response, message: string, data?: T, statusC
     message,
     data,
   };
-  res.status(statusCode).json(response);
+  res.status(statusCode).set('Content-Type', 'application/json; charset=utf-8').json(response);
 }
 
 export function sendError(res: Response, message: string, statusCode = 400, errors?: any[]): void {
@@ -16,5 +16,5 @@ export function sendError(res: Response, message: string, statusCode = 400, erro
     message,
     errors,
   };
-  res.status(statusCode).json(response);
+  res.status(statusCode).set('Content-Type', 'application/json; charset=utf-8').json(response);
 }

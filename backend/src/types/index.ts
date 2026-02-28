@@ -3,6 +3,8 @@ export interface User {
   name: string;
   email: string;
   password: string;
+  google_id?: string | null;
+  auth_provider: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -11,6 +13,7 @@ export interface UserResponse {
   id: number;
   name: string;
   email: string;
+  auth_provider?: string;
   created_at: Date;
 }
 

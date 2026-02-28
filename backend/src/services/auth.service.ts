@@ -25,6 +25,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
+      auth_provider: user.auth_provider || 'local',
       created_at: user.created_at,
     };
   }

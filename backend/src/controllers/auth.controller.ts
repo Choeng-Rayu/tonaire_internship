@@ -46,6 +46,12 @@ export class AuthController {
         return;
       }
 
+      // Check if user has password (might be Google-only user)
+      if (!user.password) {
+        sendError(res, 'This account uses Google Sign-In. Please log in with Google.', 401);
+        return;
+      }
+
       // Compare passwords
       const isMatch = await AuthService.comparePassword(password, user.password);
       if (!isMatch) {
@@ -63,6 +69,48 @@ export class AuthController {
     } catch (error) {
       console.error('Login error:', error);
       sendError(res, 'Login failed.', 500);
+    }
+  }
+
+  /**
+   * POST /api/auth/google
+   * Google Sign-In from mobile/web client (receives idToken or access_token + user info)
+   */
+  static async googleLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const { google_id, email, name } = req.body;
+
+      if (!google_id || !email || !name) {
+        sendError(res, 'Missing required fields: google_id, email, name.', 400);
+        return;
+      }
+
+      // Check if user exists by google_id
+      let user = await UserModel.findByGoogleId(google_id);
+
+      if (!user) {
+        // Check if user exists by email (might have registered with email/password)
+        user = await UserModel.findByEmail(email);
+
+        if (user) {
+          // Link Google account to existing user
+          user = await UserModel.linkGoogleAccount(user.id, google_id);
+        } else {
+          // Create new user with Google
+          user = await UserModel.createGoogleUser(name, email, google_id);
+        }
+      }
+
+      // Generate JWT token
+      const token = AuthService.generateToken({ userId: user.id, email: user.email });
+
+      sendSuccess(res, 'Google login successful.', {
+        token,
+        user: AuthService.toUserResponse(user),
+      });
+    } catch (error) {
+      console.error('Google login error:', error);
+      sendError(res, 'Google login failed.', 500);
     }
   }
 

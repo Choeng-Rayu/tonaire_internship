@@ -14,7 +14,8 @@ class ApiService {
   String? get token => _token;
 
   Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json; charset=utf-8',
         if (_token != null) 'Authorization': 'Bearer $_token',
       };
 
@@ -68,6 +69,8 @@ class ApiService {
     if (_token != null) {
       request.headers['Authorization'] = 'Bearer $_token';
     }
+    request.headers['Accept'] = 'application/json; charset=utf-8';
+    request.headers['Accept-Charset'] = 'utf-8';
 
     request.fields.addAll(fields);
 
@@ -96,6 +99,8 @@ class ApiService {
     if (_token != null) {
       request.headers['Authorization'] = 'Bearer $_token';
     }
+    request.headers['Accept'] = 'application/json; charset=utf-8';
+    request.headers['Accept-Charset'] = 'utf-8';
 
     request.fields.addAll(fields);
 
@@ -114,7 +119,8 @@ class ApiService {
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    // Always decode using UTF-8 to properly handle Khmer and other Unicode text
+    final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
     return body;
   }
 }

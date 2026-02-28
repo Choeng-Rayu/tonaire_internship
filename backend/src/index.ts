@@ -7,10 +7,12 @@ import path from 'path';
 import { env } from './config/env';
 import { getPool } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
+import { activityLogger } from './middleware/activityLogger';
 
 import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
 import productRoutes from './routes/product.routes';
+import activityRoutes from './routes/activity.routes';
 
 const app = express();
 
@@ -21,6 +23,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ─── Activity Logger (logs all requests to DB) ──────────────
+app.use(activityLogger);
+
 // ─── Static files (product images) ──────────────────────────
 app.use('/uploads', express.static(path.join(__dirname, '..', env.uploadDir)));
 
@@ -28,6 +33,7 @@ app.use('/uploads', express.static(path.join(__dirname, '..', env.uploadDir)));
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/activity', activityRoutes);
 
 // ─── Health check ────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
