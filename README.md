@@ -1,4 +1,4 @@
-# Taonaire Internship Project
+# Tonaire Internship Project
 
 Full-stack application for **Category & Product Management** built with a **Node.js / TypeScript** backend and a **Flutter** cross-platform frontend.
 
