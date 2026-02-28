@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import '../config/app_config.dart';
@@ -61,7 +61,8 @@ class ApiService {
   Future<Map<String, dynamic>> multipartPost(
     String endpoint, {
     required Map<String, String> fields,
-    File? imageFile,
+    Uint8List? imageBytes,
+    String? imageFileName,
     String imageFieldName = 'image',
   }) async {
     final request = http.MultipartRequest('POST', Uri.parse(_buildUrl(endpoint)));
@@ -74,11 +75,12 @@ class ApiService {
 
     request.fields.addAll(fields);
 
-    if (imageFile != null) {
-      final ext = imageFile.path.split('.').last.toLowerCase();
-      request.files.add(await http.MultipartFile.fromPath(
+    if (imageBytes != null && imageFileName != null) {
+      final ext = imageFileName.split('.').last.toLowerCase();
+      request.files.add(http.MultipartFile.fromBytes(
         imageFieldName,
-        imageFile.path,
+        imageBytes,
+        filename: imageFileName,
         contentType: MediaType('image', ext == 'jpg' ? 'jpeg' : ext),
       ));
     }
@@ -91,7 +93,8 @@ class ApiService {
   Future<Map<String, dynamic>> multipartPut(
     String endpoint, {
     required Map<String, String> fields,
-    File? imageFile,
+    Uint8List? imageBytes,
+    String? imageFileName,
     String imageFieldName = 'image',
   }) async {
     final request = http.MultipartRequest('PUT', Uri.parse(_buildUrl(endpoint)));
@@ -104,11 +107,12 @@ class ApiService {
 
     request.fields.addAll(fields);
 
-    if (imageFile != null) {
-      final ext = imageFile.path.split('.').last.toLowerCase();
-      request.files.add(await http.MultipartFile.fromPath(
+    if (imageBytes != null && imageFileName != null) {
+      final ext = imageFileName.split('.').last.toLowerCase();
+      request.files.add(http.MultipartFile.fromBytes(
         imageFieldName,
-        imageFile.path,
+        imageBytes,
+        filename: imageFileName,
         contentType: MediaType('image', ext == 'jpg' ? 'jpeg' : ext),
       ));
     }

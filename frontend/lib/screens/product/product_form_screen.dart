@@ -1,6 +1,5 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../providers/product_provider.dart';
@@ -25,7 +24,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Product? _editingProduct;
   bool _isEdit = false;
   int? _selectedCategoryId;
-  File? _selectedImage;
+  Uint8List? _selectedImageBytes;
+  String? _selectedImageName;
 
   @override
   void initState() {
@@ -68,8 +68,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         imageQuality: 85,
       );
       if (picked != null) {
+        final bytes = await picked.readAsBytes();
         setState(() {
-          _selectedImage = File(picked.path);
+          _selectedImageBytes = bytes;
+          _selectedImageName = picked.name;
         });
       }
     } catch (e) {
@@ -110,7 +112,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             : null,
         categoryId: _selectedCategoryId!,
         price: price,
-        image: _selectedImage,
+        imageBytes: _selectedImageBytes,
+        imageFileName: _selectedImageName,
       );
     } else {
       success = await provider.createProduct(
@@ -120,7 +123,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             : null,
         categoryId: _selectedCategoryId!,
         price: price,
-        image: _selectedImage,
+        imageBytes: _selectedImageBytes,
+        imageFileName: _selectedImageName,
       );
     }
 
@@ -164,7 +168,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   children: [
                     // Image Picker
                     GestureDetector(
-                      onTap: kIsWeb ? null : _pickImage,
+                      onTap: _pickImage,
                       child: Container(
                         height: 180,
                         decoration: BoxDecoration(
@@ -172,11 +176,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey[300]!),
                         ),
-                        child: _selectedImage != null
+                        child: _selectedImageBytes != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.file(
-                                  _selectedImage!,
+                                child: Image.memory(
+                                  _selectedImageBytes!,
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                 ),
@@ -191,9 +195,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    kIsWeb
-                                        ? 'Image upload not available on web'
-                                        : 'Tap to select image',
+                                    'Tap to select image',
                                     style: TextStyle(color: Colors.grey[600]),
                                   ),
                                 ],

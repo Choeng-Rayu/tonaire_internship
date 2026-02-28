@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(activityLogger);
 
 // ─── Static files (product images) ──────────────────────────
-app.use('/uploads', express.static(path.join(__dirname, '..', env.uploadDir)));
+app.use('/uploads/images', express.static(path.join(__dirname, '..', env.uploadDir)));
 
 // ─── API Routes ──────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

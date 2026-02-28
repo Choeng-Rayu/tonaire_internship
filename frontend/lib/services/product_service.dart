@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import '../services/api_service.dart';
 
 class ProductService {
@@ -38,7 +38,8 @@ class ProductService {
     String? description,
     required int categoryId,
     required double price,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
     return _api.multipartPost(
       '/products',
@@ -48,7 +49,8 @@ class ProductService {
         'category_id': categoryId.toString(),
         'price': price.toString(),
       },
-      imageFile: image,
+      imageBytes: imageBytes,
+      imageFileName: imageFileName,
     );
   }
 
@@ -58,7 +60,8 @@ class ProductService {
     String? description,
     required int categoryId,
     required double price,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
     return _api.multipartPut(
       '/products/$id',
@@ -68,7 +71,8 @@ class ProductService {
         'category_id': categoryId.toString(),
         'price': price.toString(),
       },
-      imageFile: image,
+      imageBytes: imageBytes,
+      imageFileName: imageFileName,
     );
   }
 

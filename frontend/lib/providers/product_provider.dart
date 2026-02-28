@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/api_service.dart';
@@ -136,7 +136,8 @@ class ProductProvider extends ChangeNotifier {
     String? description,
     required int categoryId,
     required double price,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -148,7 +149,8 @@ class ProductProvider extends ChangeNotifier {
         description: description,
         categoryId: categoryId,
         price: price,
-        image: image,
+        imageBytes: imageBytes,
+        imageFileName: imageFileName,
       );
 
       if (response['success'] == true) {
@@ -175,7 +177,8 @@ class ProductProvider extends ChangeNotifier {
     String? description,
     required int categoryId,
     required double price,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -188,7 +191,8 @@ class ProductProvider extends ChangeNotifier {
         description: description,
         categoryId: categoryId,
         price: price,
-        image: image,
+        imageBytes: imageBytes,
+        imageFileName: imageFileName,
       );
 
       if (response['success'] == true) {

@@ -7,6 +7,7 @@ import '../screens/category/category_list_screen.dart';
 import '../screens/category/category_form_screen.dart';
 import '../screens/product/product_list_screen.dart';
 import '../screens/product/product_form_screen.dart';
+import '../utils/auth_guard.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -22,10 +23,10 @@ class AppRoutes {
         login: (_) => const LoginScreen(),
         signup: (_) => const SignupScreen(),
         forgotPassword: (_) => const ForgotPasswordScreen(),
-        home: (_) => const HomeScreen(),
-        categories: (_) => const CategoryListScreen(),
-        categoryForm: (_) => const CategoryFormScreen(),
-        products: (_) => const ProductListScreen(),
-        productForm: (_) => const ProductFormScreen(),
+        home: (_) => const AuthGuard(child: HomeScreen()),
+        categories: (_) => const AuthGuard(child: CategoryListScreen()),
+        categoryForm: (_) => const AuthGuard(child: CategoryFormScreen()),
+        products: (_) => const AuthGuard(child: ProductListScreen()),
+        productForm: (_) => const AuthGuard(child: ProductFormScreen()),
       };
 }
