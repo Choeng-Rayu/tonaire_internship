@@ -22,14 +22,10 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> googleLogin({
-    required String googleId,
-    required String email,
-    required String name,
+    required String idToken,
   }) async {
     return _api.post('/auth/google', body: {
-      'google_id': googleId,
-      'email': email,
-      'name': name,
+      'idToken': idToken,
     });
   }
 

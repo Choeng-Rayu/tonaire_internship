@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
@@ -10,8 +11,11 @@ import '../utils/constants.dart';
 class AuthProvider extends ChangeNotifier {
   final ApiService _apiService;
   late final AuthService _authService;
+  // serverClientId must be the WEB client ID so Android can return an idToken
+  // that the backend can verify via Google’s tokeninfo endpoint.
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
+    scopes: ['email'],
+    serverClientId: dotenv.env['GOOGLE_CLIENT_ID'],
   );
 
   bool _isLoading = false;
@@ -160,7 +164,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         // User cancelled the sign-in
         _errorMessage = 'Google sign-in was cancelled.';
@@ -168,12 +172,21 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      // Send Google user info to our backend
-      final response = await _authService.googleLogin(
-        googleId: googleUser.id,
-        email: googleUser.email,
-        name: googleUser.displayName ?? googleUser.email.split('@')[0],
-      );
+      // Get authentication object which contains the idToken
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        _errorMessage =
+            'Failed to get Google ID token. Ensure a valid Android OAuth client '
+            'is registered in Google Cloud Console for this app.';
+        _setLoading(false);
+        return false;
+      }
+
+      // Send idToken to backend — backend verifies it with Google
+      final response = await _authService.googleLogin(idToken: idToken);
 
       if (response['success'] == true) {
         final data = response['data'];
