@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../config/theme.dart';
 import '../../utils/validators.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -39,20 +40,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!mounted) return;
 
     if (success) {
-      setState(() {
-        _otpSent = true;
-      });
+      setState(() => _otpSent = true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('OTP has been sent to your email.'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authProvider.errorMessage ?? 'Failed to send OTP.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
         ),
       );
     }
@@ -74,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Password reset successful! Please log in.'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppTheme.success,
         ),
       );
       Navigator.pop(context);
@@ -83,7 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         SnackBar(
           content:
               Text(authProvider.errorMessage ?? 'Failed to reset password.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.error,
         ),
       );
     }
@@ -92,20 +91,93 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.surface,
       appBar: AppBar(
         title: const Text('Forgot Password'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
-              child: _otpSent ? _buildResetForm() : _buildEmailForm(),
+              child: Column(
+                children: [
+                  // Step Indicator
+                  _buildStepIndicator(),
+                  const SizedBox(height: 28),
+                  _otpSent ? _buildResetForm() : _buildEmailForm(),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStepIndicator() {
+    return Row(
+      children: [
+        _stepDot(1, 'Email', active: true, done: _otpSent),
+        Expanded(
+          child: Container(
+            height: 2,
+            color: _otpSent ? AppTheme.primary : const Color(0xFFDDE2F0),
+          ),
+        ),
+        _stepDot(2, 'Reset', active: _otpSent, done: false),
+      ],
+    );
+  }
+
+  Widget _stepDot(int step, String label,
+      {required bool active, required bool done}) {
+    final color = (active || done) ? AppTheme.primary : const Color(0xFFBDBDD0);
+    return Column(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: done
+                ? AppTheme.primary
+                : active
+                    ? AppTheme.primary.withOpacity(0.15)
+                    : const Color(0xFFF0F2FF),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: (active || done) ? AppTheme.primary : const Color(0xFFDDE2F0),
+              width: 2,
+            ),
+          ),
+          child: Center(
+            child: done
+                ? const Icon(Icons.check, size: 16, color: Colors.white)
+                : Text(
+                    '$step',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 
@@ -115,12 +187,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.lock_reset,
-            size: 64,
-            color: Colors.blue,
+          // Icon
+          Center(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(Icons.lock_reset_rounded,
+                  size: 40, color: Colors.white),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'Reset Password',
             style: Theme.of(context).textTheme.titleLarge,
@@ -128,15 +212,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Enter your email address to receive an OTP code.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            'Enter your email to receive a one-time code.',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: const Color(0xFF7A7A9A)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
 
-          // Email
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -150,7 +234,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Send OTP Button
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               return ElevatedButton(
@@ -160,9 +243,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Text('Send OTP'),
               );
@@ -179,12 +260,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.mark_email_read,
-            size: 64,
-            color: Colors.green,
+          // Icon
+          Center(
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppTheme.success, Color(0xFF1E7E34)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(Icons.mark_email_read_rounded,
+                  size: 40, color: Colors.white),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'Enter OTP & New Password',
             style: Theme.of(context).textTheme.titleLarge,
@@ -192,13 +285,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'We sent a 6-digit OTP to ${_emailController.text}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+            'A 6-digit code was sent to\n${_emailController.text}',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: const Color(0xFF7A7A9A)),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
 
           // OTP
           TextFormField(
@@ -206,6 +300,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.next,
             maxLength: 6,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 8),
             decoration: const InputDecoration(
               labelText: 'OTP Code',
               prefixIcon: Icon(Icons.pin_outlined),
@@ -224,13 +321,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               labelText: 'New Password',
               prefixIcon: const Icon(Icons.lock_outlined),
               suffixIcon: IconButton(
-                icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility),
-                onPressed: () {
-                  setState(() {
-                    _obscurePassword = !_obscurePassword;
-                  });
-                },
+                icon: Icon(_obscurePassword
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
             ),
             validator: Validators.password,
@@ -253,7 +348,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Reset Password Button
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               return ElevatedButton(
@@ -263,17 +357,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                            strokeWidth: 2, color: Colors.white),
                       )
                     : const Text('Reset Password'),
               );
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
-          // Resend OTP
           TextButton(
             onPressed: () {
               setState(() {

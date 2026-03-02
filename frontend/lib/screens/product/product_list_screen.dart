@@ -6,6 +6,7 @@ import '../../providers/category_provider.dart';
 import '../../models/product.dart';
 import '../../config/routes.dart';
 import '../../config/app_config.dart';
+import '../../config/theme.dart';
 import '../../utils/debouncer.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -109,21 +110,50 @@ class _ProductListScreenState extends State<ProductListScreen> {
           // Search Bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Search products... (English / ខ្មែរ)',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : null,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primary.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Search products... (English / ខ្មែរ)',
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: AppTheme.primary),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(
+                        color: AppTheme.primary, width: 1.5),
+                  ),
+                  fillColor: Colors.transparent,
+                  filled: true,
+                ),
               ),
             ),
           ),
@@ -340,85 +370,146 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildProductCard(Product product) {
-    return Card(
-      child: ListTile(
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            width: 56,
-            height: 56,
-            child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl:
-                        '${AppConfig.uploadBaseUrl}/${product.imageUrl}',
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image, color: Colors.grey),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child:
-                          const Icon(Icons.broken_image, color: Colors.grey),
-                    ),
-                  )
-                : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.inventory_2, color: Colors.grey),
-                  ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEEF0FA), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
-        ),
-        title: Text(
-          product.name,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '\$${product.price.toStringAsFixed(2)}',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
+        ],
+      ),
+      child: Row(
+        children: [
+          // Image
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
+            ),
+            child: SizedBox(
+              width: 80,
+              height: 80,
+              child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl:
+                          '${AppConfig.uploadBaseUrl}/${product.imageUrl}',
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: const Color(0xFFF0F2FF),
+                        child: const Icon(Icons.image_outlined,
+                            color: AppTheme.primaryLight),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: const Color(0xFFF0F2FF),
+                        child: const Icon(Icons.broken_image_outlined,
+                            color: AppTheme.primaryLight),
+                      ),
+                    )
+                  : Container(
+                      color: const Color(0xFFF0F2FF),
+                      child: const Icon(Icons.inventory_2_outlined,
+                          color: AppTheme.primaryLight),
+                    ),
+            ),
+          ),
+          // Info
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                        color: Color(0xFF1C1C2E)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '\$${product.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  if (product.categoryName != null) ...
+                  [
+                    const SizedBox(height: 4),
+                    Text(
+                      product.categoryName!,
+                      style: const TextStyle(
+                          color: Color(0xFF7A7A9A), fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (product.categoryName != null)
-              Text(
-                product.categoryName!,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
+          ),
+          // Actions
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined,
+                    color: AppTheme.primary, size: 20),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.productForm,
+                    arguments: product,
+                  );
+                },
+                tooltip: 'Edit',
               ),
-          ],
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.productForm,
-                  arguments: product,
-                );
-              },
-              tooltip: 'Edit',
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _confirmDelete(product),
-              tooltip: 'Delete',
-            ),
-          ],
-        ),
+              IconButton(
+                icon: Icon(Icons.delete_outline,
+                    color: AppTheme.error, size: 20),
+                onPressed: () => _confirmDelete(product),
+                tooltip: 'Delete',
+              ),
+            ],
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
     );
   }
 
   Widget _buildProductGridCard(Product product) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEEF0FA), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primary.withOpacity(0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
@@ -428,6 +519,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             arguments: product,
           );
         },
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -443,20 +535,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             '${AppConfig.uploadBaseUrl}/${product.imageUrl}',
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: Colors.grey[200],
-                          child:
-                              const Icon(Icons.image, size: 40, color: Colors.grey),
+                          color: const Color(0xFFF0F2FF),
+                          child: const Icon(Icons.image_outlined,
+                              size: 36, color: AppTheme.primaryLight),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.broken_image,
-                              size: 40, color: Colors.grey),
+                          color: const Color(0xFFF0F2FF),
+                          child: const Icon(Icons.broken_image_outlined,
+                              size: 36, color: AppTheme.primaryLight),
                         ),
                       )
                     : Container(
-                        color: Colors.grey[200],
-                        child: const Icon(Icons.inventory_2,
-                            size: 40, color: Colors.grey),
+                        color: const Color(0xFFF0F2FF),
+                        child: const Icon(Icons.inventory_2_outlined,
+                            size: 36, color: AppTheme.primaryLight),
                       ),
               ),
             ),
@@ -464,47 +556,60 @@ class _ProductListScreenState extends State<ProductListScreen> {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       product.name,
                       style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: Color(0xFF1C1C2E),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      '\$${product.price.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: AppTheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
-                    if (product.categoryName != null)
+                    if (product.categoryName != null) ...
+                    [
+                      const SizedBox(height: 2),
                       Text(
                         product.categoryName!,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 11,
-                        ),
+                        style: const TextStyle(
+                            color: Color(0xFF7A7A9A), fontSize: 11),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                    ],
                     const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        InkWell(
-                          onTap: () => _confirmDelete(product),
-                          child:
-                              const Icon(Icons.delete, color: Colors.red, size: 20),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: InkWell(
+                        onTap: () => _confirmDelete(product),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Icons.delete_outline,
+                              color: AppTheme.error, size: 18),
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
