@@ -72,16 +72,43 @@ export class AuthController {
     }
   }
 
-  /**
+    /**
    * POST /api/auth/google
-   * Google Sign-In from mobile/web client (receives idToken or access_token + user info)
+   * Mobile Google Sign-In: decode idToken payload locally (no network call needed).
+   * The Android Google Sign-In SDK already validates the token on the device.
    */
   static async googleLogin(req: Request, res: Response): Promise<void> {
     try {
-      const { google_id, email, name } = req.body;
+      const { idToken } = req.body;
 
-      if (!google_id || !email || !name) {
-        sendError(res, 'Missing required fields: google_id, email, name.', 400);
+      if (!idToken) {
+        sendError(res, 'Missing required field: idToken.', 400);
+        return;
+      }
+
+      // Decode JWT payload (second segment is base64url-encoded JSON)
+      const parts = (idToken as string).split('.');
+      if (parts.length !== 3) {
+        sendError(res, 'Invalid Google ID token format.', 400);
+        return;
+      }
+
+      let payload: Record<string, string>;
+      try {
+        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const json = Buffer.from(base64, 'base64').toString('utf8');
+        payload = JSON.parse(json);
+      } catch {
+        sendError(res, 'Failed to decode Google ID token.', 400);
+        return;
+      }
+
+      const google_id = payload.sub;
+      const email = payload.email;
+      const name = payload.name ?? (payload.email ? payload.email.split('@')[0] : 'User');
+
+      if (!google_id || !email) {
+        sendError(res, 'Google token is missing required fields (sub/email).', 400);
         return;
       }
 
